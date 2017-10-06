@@ -22,30 +22,26 @@ function standardizeNumber(number) {
     }
 }
 
-function convertNumberToWords(array) {
-    let expandedArray = array.map((e) => dialPad[e].split('')); // [['a', 'b', 'c'], ['a', 'b', 'c']]
+function convertNumberToWords(inputtedNumberArray) {
+    let expandedArray = inputtedNumberArray.map((e) => dialPad[e].split('')); // [['a', 'b', 'c'], ['a', 'b', 'c']]
 
-    function findWordRecursively(letters, progress, current_word, limit, found_words) {
+    function findWordRecursively(letters, progress, currentWord, limit, foundWords) {
 
-        if (progress == limit) {
-            // completed word, add to collection
-            found_words.push(current_word);
+        if (progress === limit) {
+            foundWords.push(currentWord);
+
         } else {
-
-            // make recursive call for each letter in current press
             for (var i = 0; i < letters[progress].length; i++) {
-                var next_word = current_word + letters[progress][i];
+                let next_word = currentWord + letters[progress][i];
 
-                findWordRecursively(letters, progress + 1, next_word, limit, found_words);
+                findWordRecursively(letters, progress + 1, next_word, limit, foundWords);
             }
         }
 
-        return found_words
+        return foundWords
     }
 
-    let return_value = findWordRecursively(expandedArray, 0, '', array.length, []);
-
-    return return_value;
+    return findWordRecursively(expandedArray, 0, '', inputtedNumberArray.length, []);
 }
 
 // function convertArrayToRegexp(array) {
@@ -56,8 +52,18 @@ function convertNumberToWords(array) {
 function searchMatchingWords(listOfPossibleWords) {
 
     const wordDict = fs.readFileSync('./words.txt', 'utf8').split('\n');
+    let matchedWords = [];
 
-    let matchedWords = listOfPossibleWords.filter((word) => wordDict.includes(word)).slice(0, 3);
+    // Break out of the for-loop prematurely if we already have 3 matches
+    for (let word of listOfPossibleWords) {
+        if (matchedWords.length === 3) {
+            break;
+        } else if (wordDict.includes(word)) {
+            matchedWords.push(word);
+        }
+    }
+
+    //let matchedWords = listOfPossibleWords.filter((word) => wordDict.includes(word)).slice(0, 3);
 
     return matchedWords;
 }
