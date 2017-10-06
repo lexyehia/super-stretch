@@ -1,5 +1,15 @@
 const fs = require('fs');
-const readline = require('readline');
+
+const dialPad = {
+    2: 'abc',
+    3: 'def',
+    4: 'ghi',
+    5: 'jkl',
+    6: 'mno',
+    7: 'prs',
+    8: 'tuv',
+    9: 'wxy'
+};
 
 function standardizeNumber(number) {
 
@@ -11,40 +21,52 @@ function standardizeNumber(number) {
         throw Error("Invalid input");
     }
 }
-//
 
-function convertArrayToRegexp(array) {
-    const dialPad = {
-        2: '[abc]',
-        3: '[def]',
-        4: '[ghi]',
-        5: '[jkl]',
-        6: '[mno]',
-        7: '[prs]',
-        8: '[tuv]',
-        9: '[wxy]'
+function convertNumberToWords(array) {
+    let expandedArray = array.map((e) => dialPad[e].split('')); // [['a', 'b', 'c'], ['a', 'b', 'c']]
+
+    function findWordRecursively(letters, progress, current_word, limit, found_words) {
+
+        if (progress == limit) {
+            // completed word, add to collection
+            found_words.push(current_word);
+        } else {
+
+            // make recursive call for each letter in current press
+            for (var i = 0; i < letters[progress].length; i++) {
+                var next_word = current_word + letters[progress][i];
+
+                findWordRecursively(letters, progress + 1, next_word, limit, found_words);
+            }
+        }
+
+        return found_words
     }
 
-    return new RegExp('\\b' + array.map((e) => dialPad[e]).join('') + '\\b', 'gi');
+    let return_value = findWordRecursively(expandedArray, 0, '', array.length, []);
+
+    return return_value;
 }
 
-function searchMatchingWords(regexp) {
+// function convertArrayToRegexp(array) {
+//
+//     return new RegExp('\\b' + array.map((e) => dialPad[e]).join('') + '\\b', 'gi');
+// }
+
+function searchMatchingWords(listOfPossibleWords) {
 
     const wordDict = fs.readFileSync('./words.txt', 'utf8').split('\n');
-    let result = [];
 
-    wordDict.forEach((w) => {
-        if (regexp.test(w)) { result.push(w); }
-    });
+    let matchedWords = listOfPossibleWords.filter((word) => wordDict.includes(word)).slice(0, 3);
 
-    return result;
+    return matchedWords;
 }
 
 function mainFunc(number) {
-    let rxp = convertArrayToRegexp(standardizeNumber(number));
-    return searchMatchingWords(rxp);
-
+    let possibleWords = convertNumberToWords(standardizeNumber(number));
+    let matches = searchMatchingWords(possibleWords);
+    return matches;
 }
 
-var test = mainFunc(43556);
+console.log(mainFunc(73636237));
 
